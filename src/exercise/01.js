@@ -8,6 +8,10 @@ function countReducer(state,action){
   if(action.type==='INCREMENT'){
     return {count: state.count+action.step}
   }
+  else{
+    return {count: state.count-action.step}
+    
+  }
   
 
 
@@ -24,8 +28,11 @@ function Counter({initialCount = 0, step = 1}) {
   // The 2nd argument is called "newState" - the value passed to setCount
  
 const increment = () => dispatch({type: 'INCREMENT', step})
+const decrement = () => dispatch({type: 'DECREMENT', step})
 
-  return <button onClick={increment}>{count}</button>
+  return <><button onClick={increment}>{count}</button>
+  <button onClick={decrement}>-</button></> 
+ 
 }
 
 function App() {
