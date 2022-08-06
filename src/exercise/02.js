@@ -30,7 +30,7 @@ function asyncReducer(state, action) {
     }
   }
 }
-function useAsync(asyncCallback, initialState){
+function useAsync(initialState){
 
   const [state, dispatch] = React.useReducer(asyncReducer, {
     status: 'idle',
@@ -40,11 +40,7 @@ function useAsync(asyncCallback, initialState){
     ...initialState
   })
 
-
-  
-  React.useEffect(() => {
-    // 💰 this first early-exit bit is a little tricky, so let me give you a hint:
-    const promise = asyncCallback()
+  const run= React.useCallback((promise)=>{
     if (!promise) {
       return
     }
@@ -58,22 +54,29 @@ function useAsync(asyncCallback, initialState){
         dispatch({type: 'rejected', error})
       },
     )
+    
+  },[dispatch])
 
-  }, [asyncCallback])
-  return state
+  
+
+  return {...state,run}
 }
 
 function PokemonInfo({pokemonName}) {
-  const asyncCallBack= React.useCallback(() => {
-    if (!pokemonName) {
-      return
-    }
-    return fetchPokemon(pokemonName)
-  },[pokemonName])
-  
-  const state = useAsync(asyncCallBack, {status: pokemonName? 'pending':'idle'})
+ 
+  const state = useAsync({ status: pokemonName ? 'pending' : 'idle' })
+  const {pokemon, status, error,run} = state
+
+
+React.useEffect(() => {
+  if (!pokemonName) {
+    return
+  }
+
+  const pokemonPromise = fetchPokemon(pokemonName)
+  run(pokemonPromise)
+}, [pokemonName, run])
   // 🐨 this will change from "pokemon" to "data"
-  const {pokemon, status, error} = state
 
   switch (status) {
     case 'idle':
