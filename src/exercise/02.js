@@ -30,15 +30,33 @@ function asyncReducer(state, action) {
     }
   }
 }
-function useAsync(initialState){
 
-  const [state, dispatch] = React.useReducer(asyncReducer, {
+function useSafeDispatch(dispatch){
+  const mounted= React.useRef(false)
+  React.useEffect(()=>{
+    mounted.current= true
+    return ()=>{
+      mounted.current= false
+    }
+  },[])
+
+  
+
+  return React.useCallback((args)=>{
+    if(mounted.current){
+      dispatch(args)
+    }
+  },[])
+}
+function useAsync(initialState){
+  const [state, unsafeDispatch] = React.useReducer(asyncReducer, {
     status: 'idle',
     // 🐨 this will need to be "data" instead of "pokemon"
     data: null,
     error: null,
     ...initialState
   })
+ const dispatch= useSafeDispatch(unsafeDispatch)
 
   const run= React.useCallback((promise)=>{
     if (!promise) {
